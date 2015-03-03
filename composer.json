@@ -1,0 +1,26 @@
+{
+    "name": "martindilling/longest-increasing-subsequence",
+    "description": "Find the longest increasing subsequence of an array of integers.",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "Martin Dilling-Hansen",
+            "email": "martindilling@gmail.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "~4.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "LIS\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LIS\\Tests\\": "tests/"
+        }
+    }
+}
