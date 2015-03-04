@@ -1,6 +1,6 @@
 <?php
 
-require_once('vendor/autoload.php');
+require_once('autoload.php');
 
 echo PHP_EOL;
 echo '----- Longest Increasing Subsequence -----' . PHP_EOL;
