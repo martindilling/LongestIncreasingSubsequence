@@ -2,8 +2,30 @@
 
 class Sequence
 {
-    protected $array = [];
-    protected $length = [];
+    /**
+     * @var array
+     */
+    protected $array;
+
+    /**
+     * @var int
+     */
+    protected $length;
+
+    /**
+     * @var array
+     */
+    protected $tailIndexes;
+
+    /**
+     * @var array
+     */
+    protected $prevIndexes;
+
+    /**
+     * @var int
+     */
+    protected $currentLength;
 
     public function __construct(array $array)
     {
@@ -11,55 +33,129 @@ class Sequence
         $this->length = count($array);
     }
 
+    /**
+     * @return array
+     */
     public function findLIS()
     {
         if (empty($this->array)) {
             return [];
         }
 
-        $tailIndexes = [];
-        $prevIndexes = [];
-
-        $tailIndexes[0] = 0;
-        $prevIndexes[0] = -1;
-        $currentLength  = 1;
+        $this->resetVariables();
 
         for ($i = 1; $i < $this->length; $i++) {
-            if ($this->array[$i] < $this->array[$tailIndexes[0]]) {
-                $tailIndexes[0] = $i;
+            if ($this->isSmallest($i)) {
+                $this->newSmallestValue($i);
             } else {
-                if ($this->array[$i] > $this->array[$tailIndexes[$currentLength - 1]]) {
-                    $prevIndexes[$i]             = $tailIndexes[$currentLength - 1];
-                    $tailIndexes[$currentLength] = $i;
-                    $currentLength++;
+                if ($this->isBiggest($i)) {
+                    $this->extendLargestSubsequence($i);
                 } else {
-                    $pos = $this->getCeilIndex($this->array, $tailIndexes, -1, $currentLength - 1, $this->array[$i]);
-
-                    $prevIndexes[$i]   = $tailIndexes[$pos - 1];
-                    $tailIndexes[$pos] = $i;
+                    $this->potentialCandidate($i);
                 }
             }
         }
 
-        $result = [];
-        for ($i = $tailIndexes[$currentLength - 1]; $i >= 0; $i = $prevIndexes[$i]) {
-            array_unshift($result, $this->array[$i]);
-        }
-
-        return $result;
+        return $this->generateLisArray();
     }
 
-    public function getCeilIndex($array, $tailIndices, $len, $r, $key)
+    /**
+     * Reset variables to defaults for a new calculation.
+     */
+    protected function resetVariables()
     {
-        while ($r - $len > 1) {
-            $mid = $len + ($r - $len) / 2;
-            if ($array[$tailIndices[$mid]] >= $key) {
-                $r = $mid;
+        $this->tailIndexes = [];
+        $this->prevIndexes = [];
+
+        $this->tailIndexes[0] = 0;
+        $this->prevIndexes[0] = -1;
+
+        $this->currentLength = 1;
+    }
+
+    /**
+     * @param int $i
+     * @return bool
+     */
+    protected function isSmallest($i)
+    {
+        $currentSmallest = $this->array[$this->tailIndexes[0]];
+
+        return $this->array[$i] < $currentSmallest;
+    }
+
+    /**
+     * @param int $i
+     */
+    protected function newSmallestValue($i)
+    {
+        $this->tailIndexes[0] = $i;
+    }
+
+    /**
+     * @param int $i
+     * @return bool
+     */
+    protected function isBiggest($i)
+    {
+        $currentBiggest = $this->array[$this->tailIndexes[$this->currentLength - 1]];
+
+        return $this->array[$i] > $currentBiggest;
+    }
+
+    /**
+     * @param int $i
+     */
+    protected function extendLargestSubsequence($i)
+    {
+        $this->prevIndexes[$i]                   = $this->tailIndexes[$this->currentLength - 1];
+        $this->tailIndexes[$this->currentLength] = $i;
+        $this->currentLength++;
+    }
+
+    /**
+     * @param int $i
+     */
+    protected function potentialCandidate($i)
+    {
+        $pos = $this->getCeilIndex(-1, $this->currentLength - 1, $this->array[$i]);
+
+        $this->prevIndexes[$i]   = $this->tailIndexes[$pos - 1];
+        $this->tailIndexes[$pos] = $i;
+    }
+
+    /**
+     * @param int $len
+     * @param int $pos
+     * @param int $key
+     * @return float|int
+     */
+    public function getCeilIndex($len, $pos, $key)
+    {
+        while ($pos - $len > 1) {
+            $mid = $len + ($pos - $len) / 2;
+            if ($this->array[$this->tailIndexes[$mid]] >= $key) {
+                $pos = $mid;
             } else {
                 $len = $mid;
             }
         }
 
-        return $r;
+        return $pos;
+    }
+
+    /**
+     * Generate the longest increasing subsequence as an array.
+     *
+     * @return array
+     */
+    protected function generateLisArray()
+    {
+        $result = [];
+        for ($i = $this->tailIndexes[$this->currentLength - 1]; $i >= 0; $i = $this->prevIndexes[$i]) {
+            array_unshift($result, $this->array[$i]);
+        }
+
+        return $result;
     }
 }
